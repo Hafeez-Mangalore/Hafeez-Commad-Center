@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Personal Command Center</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+<script src="vendor/react.production.min.js"></script>
+<script src="vendor/react-dom.production.min.js"></script>
+<script src="vendor/babel.min.js"></script>
+<script src="vendor/tailwind.js"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+        keyframes: {
+          rise: { '0%': { opacity: 0, transform: 'translateY(12px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+          fadeIn: { '0%': { opacity: 0 }, '100%': { opacity: 1 } },
+          pop: { '0%': { opacity: 0, transform: 'scale(0.96) translateY(-6px)' }, '100%': { opacity: 1, transform: 'scale(1) translateY(0)' } },
+          modalIn: { '0%': { opacity: 0, transform: 'translateY(24px) scale(0.97)' }, '100%': { opacity: 1, transform: 'translateY(0) scale(1)' } },
+          toastIn: { '0%': { opacity: 0, transform: 'translateY(14px) scale(0.95)' }, '100%': { opacity: 1, transform: 'translateY(0) scale(1)' } },
+          wave: { '0%, 100%': { transform: 'rotate(0deg)' }, '25%': { transform: 'rotate(14deg)' }, '75%': { transform: 'rotate(-10deg)' } },
+          shimmer: { '0%': { backgroundPosition: '200% 0' }, '100%': { backgroundPosition: '-200% 0' } },
+          checkPop: { '0%': { transform: 'scale(0.55)' }, '55%': { transform: 'scale(1.18)' }, '100%': { transform: 'scale(1)' } },
+          pulseSoft: { '0%, 100%': { opacity: 1 }, '50%': { opacity: 0.45 } },
+          barGrow: { '0%': { transform: 'scaleX(0)' }, '100%': { transform: 'scaleX(1)' } },
+        },
+        animation: {
+          rise: 'rise 0.6s cubic-bezier(0.16,1,0.3,1) both',
+          'fade-in': 'fadeIn 0.2s ease-out both',
+          pop: 'pop 0.4s cubic-bezier(0.16,1,0.3,1) both',
+          'modal-in': 'modalIn 0.35s cubic-bezier(0.16,1,0.3,1) both',
+          'toast-in': 'toastIn 0.35s cubic-bezier(0.16,1,0.3,1) both',
+          wave: 'wave 1.4s ease-in-out 1',
+          shimmer: 'shimmer 3s linear infinite',
+          'check-pop': 'checkPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both',
+          'pulse-soft': 'pulseSoft 2.6s ease-in-out infinite',
+          'bar-grow': 'barGrow 0.8s cubic-bezier(0.16,1,0.3,1) both',
+        },
+      },
+    },
+  };
+</script>
+<style type="text/tailwindcss">
+  @layer base {
+    ::selection { @apply bg-indigo-500/25; }
+  }
+  @layer components {
+    .surface {
+      @apply rounded-[28px] bg-white/95 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/70 dark:border-white/[0.07] shadow-[0_1px_1px_rgba(15,23,42,0.03),0_18px_40px_-26px_rgba(15,23,42,0.28)] dark:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.04),0_24px_60px_-30px_rgba(0,0,0,0.75)];
+    }
+    .surface-interactive {
+      @apply transition-all duration-300 ease-out hover:-translate-y-[3px] hover:shadow-[0_1px_1px_rgba(15,23,42,0.03),0_30px_60px_-28px_rgba(79,70,229,0.3)] dark:hover:shadow-[inset_0_1px_0_0_rgba(255,255,255,0.06),0_30px_70px_-28px_rgba(99,102,241,0.45)];
+    }
+    .eyebrow {
+      @apply text-[10.5px] font-bold uppercase tracking-[0.16em] text-slate-400 dark:text-slate-500;
+    }
+    .field-input {
+      @apply w-full rounded-2xl border border-slate-200/80 dark:border-white/[0.08] bg-slate-50/80 dark:bg-white/[0.04] px-3.5 py-2.5 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/10 focus:border-indigo-300 dark:focus:border-indigo-400/40 focus:bg-white dark:focus:bg-white/[0.06] transition-all duration-200;
+    }
+  }
+</style>
+<style>
+  html, body { font-family: 'Inter', system-ui, sans-serif; }
+  body { -webkit-font-smoothing: antialiased; text-rendering: optimizeLegibility; }
+  .num { font-variant-numeric: tabular-nums; font-feature-settings: 'tnum' 1; }
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.35); border-radius: 8px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.55); background-clip: padding-box; }
+  input[type="number"]::-webkit-inner-spin-button { opacity: 0.45; }
+  .bg-shimmer { background-image: linear-gradient(110deg, transparent 40%, rgba(255,255,255,0.4) 50%, transparent 60%); background-size: 250% 100%; }
+
+  .ambient-bg { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+  .ambient-bg::before, .ambient-bg::after {
+    content: ''; position: absolute; border-radius: 9999px; filter: blur(100px);
+  }
+  .ambient-bg::before {
+    width: 620px; height: 620px; top: -240px; left: -180px;
+    background: radial-gradient(circle, rgba(99,102,241,0.14), transparent 70%);
+  }
+  .ambient-bg::after {
+    width: 560px; height: 560px; bottom: -220px; right: -160px;
+    background: radial-gradient(circle, rgba(217,70,239,0.11), transparent 70%);
+  }
+  .dark .ambient-bg::before { background: radial-gradient(circle, rgba(99,102,241,0.24), transparent 70%); }
+  .dark .ambient-bg::after { background: radial-gradient(circle, rgba(168,85,247,0.17), transparent 70%); }
+
+  .grain {
+    position: fixed; inset: 0; z-index: 999; pointer-events: none; opacity: 0.022; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .dark .grain { opacity: 0.045; }
+</style>
+</head>
+<body class="bg-[#f6f6fb] dark:bg-[#08080d]">
+  <div class="ambient-bg"></div>
+  <div id="root"></div>
+  <div class="grain"></div>
+
+  <!-- Plain JS, no JSX — must load before any component script -->
+  <script src="src/utils.js"></script>
+  <script src="src/data.js"></script>
+  <script src="src/recommend.js"></script>
+
+  <!-- Components, transformed in-browser by Babel standalone -->
+  <script type="text/babel" src="src/components/Icons.jsx"></script>
+  <script type="text/babel" src="src/components/Toast.jsx"></script>
+  <script type="text/babel" src="src/components/Header.jsx"></script>
+  <script type="text/babel" src="src/components/PrioritiesCard.jsx"></script>
+  <script type="text/babel" src="src/components/PipelineCard.jsx"></script>
+  <script type="text/babel" src="src/components/FollowUpsTable.jsx"></script>
+  <script type="text/babel" src="src/components/CommissionGoalCard.jsx"></script>
+  <script type="text/babel" src="src/components/ScheduleTimeline.jsx"></script>
+  <script type="text/babel" src="src/components/FocusMode.jsx"></script>
+  <script type="text/babel" src="src/components/QuickAdd.jsx"></script>
+  <script type="text/babel" src="src/App.jsx"></script>
+</body>
+</html>
